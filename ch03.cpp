@@ -10,25 +10,34 @@
 //i_v2 = 2i^2 -2i +1
  
 // [[Rcpp::export]]
-Rcpp::LogicalVector sieve(int nmax) {
+int sieve(int nmax) {
+//Rcpp::LogicalVector sieve(int nmax) {
     using std::size_t;
     // is_prime by index, starting with 1
-    Rcpp::LogicalVector marks(nmax, true);
+    std::vector<size_t> marks(nmax, 1);
+    std::partial_sum(marks.begin(), marks.end(), marks.begin());
     // prime the sieve, value = 3
-    int head(1);
-    while (head*head < nmax) {
+    size_t head(0);
+    size_t head_sq(3);
+    size_t factor(3);
+    while (head_sq < nmax) {
         // not prime, advance
-        if (!marks[head]) head++;
-        int marker(head);
-        // mark all factors as not prime
-        while (true) {
-            marker += (2*head+1);
-            if (marker >= nmax ) break;
-            marks[marker] = false;
-            // std::cout << "## " << marker << ", " << head <<"\n";
+        if (marks[head]) {
+            size_t marker(head_sq);
+            // mark all factors as not prime
+            while (true) {
+                marks[marker] = 0;
+                marker += factor;
+                if (marker >= nmax ) break;
+                // std::cout << "## " << marker << ", " << head <<"\n";
+            }
         }
         // advance
         head++;
+        factor = head + head + 3;
+        head_sq = 2*head * (head+3)+3;
     }
-    return(marks);
+    int nprime = nmax - std::count(marks.begin(), marks.end(), 0);
+    //Rcpp::LogicalVector marks(nprime, true);
+    return(nprime);
 }
